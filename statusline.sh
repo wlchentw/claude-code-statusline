@@ -33,7 +33,7 @@ fi
 RST='\033[0m'
 CYAN='\033[96m'
 BLUE='\033[94m'
-GRAY='\033[37m'
+GRAY='\033[38;5;250m'
 DIM='\033[2m'
 YELLOW='\033[93m'
 GREEN='\033[92m'
@@ -187,13 +187,19 @@ else
 fi
 
 # 百分比文字顏色（跟進度條整體色一致）
-if (( pct_int >= 90 )); then pct_color="$RED"
-elif (( pct_int >= 70 )); then pct_color="$YELLOW"
-else pct_color="$GREEN"; fi
+if (( USE_TRUECOLOR )); then
+  if (( pct_int >= 90 )); then pct_color='\033[38;2;211;66;50m'
+  elif (( pct_int >= 70 )); then pct_color='\033[38;2;239;161;24m'
+  else pct_color='\033[38;2;46;204;113m'; fi
+else
+  if (( pct_int >= 90 )); then pct_color="$RED"
+  elif (( pct_int >= 70 )); then pct_color="$YELLOW"
+  else pct_color="$GREEN"; fi
+fi
 
 # 警告符號
 ctx_warn=""
-if (( pct_int >= 90 )); then ctx_warn="${RED}${S_WARN}${RST}"; fi
+if (( pct_int >= 90 )); then ctx_warn='\033[38;2;211;66;50m'"${S_WARN}${RST}"; fi
 
 # 上下文視窗大小（僅在 model display_name 不包含 context 資訊時才顯示）
 ctx_size_int=${ctx_size:-0}
@@ -286,7 +292,7 @@ lines_add=${lines_add:-0}
 lines_rm=${lines_rm:-0}
 lines_section=""
 if (( lines_add > 0 || lines_rm > 0 )); then
-  lines_section="${GREEN}+${lines_add}${RST}/${RED}-${lines_rm}${RST}"
+  lines_section="\033[38;5;85m+${lines_add}${RST}/\033[38;5;204m-${lines_rm}${RST}"
 fi
 
 # ═══════════════════════════════════════════════════════════════
@@ -315,15 +321,21 @@ fi
 # 動態提示符（顏色跟上下文用量連動）
 # ═══════════════════════════════════════════════════════════════
 
-if (( pct_int >= 90 )); then prompt_color="$RED"
-elif (( pct_int >= 70 )); then prompt_color="$YELLOW"
-else prompt_color="$GREEN"; fi
+if (( USE_TRUECOLOR )); then
+  if (( pct_int >= 90 )); then prompt_color='\033[38;2;211;66;50m'
+  elif (( pct_int >= 70 )); then prompt_color='\033[38;2;239;161;24m'
+  else prompt_color='\033[38;2;46;204;113m'; fi
+else
+  if (( pct_int >= 90 )); then prompt_color="$RED"
+  elif (( pct_int >= 70 )); then prompt_color="$YELLOW"
+  else prompt_color="$GREEN"; fi
+fi
 
 # ═══════════════════════════════════════════════════════════════
 # 組裝第一行
 # ═══════════════════════════════════════════════════════════════
 
-line1="${PURPLE}${S_BRAND}${RST} ${CYAN}${model}${RST}"
+line1="${PURPLE}${S_BRAND}${RST} \033[38;5;117m${model}${RST}"
 line1+="${SEP}${bar} ${pct_color}${pct_int}%${RST}${ctx_warn}${ctx_label}"
 line1+="${SEP}${cost_color}${S_COST}\$${cost_fmt}${RST}"
 line1+="${dur_section}"
@@ -340,7 +352,7 @@ fi
 if [[ -n "$lines_section" ]]; then
   parts+=("${lines_section}")
 fi
-parts+=("${BLUE}${dir}${RST}")
+parts+=("\033[38;5;117m${dir}${RST}")
 
 # Agent / Worktree 指示器（僅在非主 session 時顯示）
 if [[ -n "${wt_name:-}" ]]; then
