@@ -31,14 +31,14 @@ fi
 # ═══════════════════════════════════════════════════════════════
 
 RST='\033[0m'
-CYAN='\033[36m'
-BLUE='\033[34m'
-GRAY='\033[90m'
+CYAN='\033[96m'
+BLUE='\033[94m'
+GRAY='\033[37m'
 DIM='\033[2m'
-YELLOW='\033[33m'
-GREEN='\033[32m'
-RED='\033[31m'
-MAGENTA='\033[35m'
+YELLOW='\033[93m'
+GREEN='\033[92m'
+RED='\033[91m'
+MAGENTA='\033[95m'
 
 # Anthropic 品牌紫 (#7266EA)
 if (( USE_TRUECOLOR )); then
