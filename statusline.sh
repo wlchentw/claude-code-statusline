@@ -246,7 +246,7 @@ dirty=""
 
 git_cache_is_stale() {
   [[ ! -f "$GIT_CACHE" ]] && return 0
-  local cache_age=$(( $(date +%s) - $(stat -f %m "$GIT_CACHE" 2>/dev/null || echo 0) ))
+  local cache_age=$(( $(date +%s) - $(stat -c %Y "$GIT_CACHE" 2>/dev/null || stat -f %m "$GIT_CACHE" 2>/dev/null || echo 0) ))
   (( cache_age > GIT_CACHE_MAX_AGE ))
 }
 
