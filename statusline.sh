@@ -106,6 +106,7 @@ parsed=$(echo "$input" | jq -r '
   (.workspace.current_dir // "." | split("/") | last),
   (.worktree.branch // ""),
   (.rate_limits.five_hour.used_percentage // -1 | tostring),
+  (.rate_limits.five_hour.resets_at // 0 | tostring),
   (.rate_limits.seven_day.used_percentage // -1 | tostring),
   (.agent.name // ""),
   (.workspace.current_dir // "."),
@@ -124,6 +125,7 @@ parsed=$(echo "$input" | jq -r '
   IFS= read -r dir
   IFS= read -r branch
   IFS= read -r rate5h
+  IFS= read -r rate5h_reset
   IFS= read -r rate7d
   IFS= read -r agent_name
   IFS= read -r cwd_full
@@ -305,13 +307,25 @@ rate7d_int=${rate7d%.*}; rate7d_int=${rate7d_int:-0}
 
 rate_parts=""
 if (( rate5h_int >= 0 )); then
-  if (( rate5h_int >= 80 )); then rate_parts+="${RED}5h:${rate5h_int}%${RST}"
-  else rate_parts+="${GRAY}5h:${rate5h_int}%${RST}"; fi
+  if (( rate5h_int >= 80 )); then rate_parts+="${RED}5h ${rate5h_int}%${RST}"
+  else rate_parts+="${GRAY}5h ${rate5h_int}%${RST}"; fi
+  # 5h 重置剩餘時間 [XhYm left]
+  rate5h_reset_int=${rate5h_reset%.*}; rate5h_reset_int=${rate5h_reset_int:-0}
+  if (( rate5h_reset_int > 0 )); then
+    remain=$(( rate5h_reset_int - $(date +%s) ))
+    if (( remain > 0 )); then
+      rh=$(( remain / 3600 ))
+      rm_=$(( (remain % 3600) / 60 ))
+      if (( rh > 0 )); then remain_str="${rh}h${rm_}m"
+      else remain_str="${rm_}m"; fi
+      rate_parts+=" ${DIM}[${remain_str} left]${RST}"
+    fi
+  fi
 fi
 if (( rate7d_int >= 0 )); then
   if [[ -n "$rate_parts" ]]; then rate_parts+=" "; fi
-  if (( rate7d_int >= 80 )); then rate_parts+="${RED}7d:${rate7d_int}%${RST}"
-  else rate_parts+="${GRAY}7d:${rate7d_int}%${RST}"; fi
+  if (( rate7d_int >= 80 )); then rate_parts+="${RED}7d ${rate7d_int}%${RST}"
+  else rate_parts+="${GRAY}7d ${rate7d_int}%${RST}"; fi
 fi
 if [[ -n "$rate_parts" ]]; then
   rate_section="${SEP}${rate_parts}"
